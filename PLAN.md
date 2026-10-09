@@ -1,203 +1,229 @@
-# Habbit: plan for a personal iOS habit and fitness tracker
+# Habbit: plan
 
-A personal iOS app that pulls steps, calories and sleep from a Fitbit Air, tracks a
-workout plan with progressive overload, and keeps the streaks going. The visual style
-follows the Ronas IT "Habit Tracker App" concept on Dribbble: chunky type, pastel cards,
-a lavender and indigo palette and a mascot.
+An open-source iOS app for tracking fitness habits. It reads Fitbit Air data from Apple
+Health, logs strength workouts with progressive overload, and turns hitting your goals
+into streaks.
+
+The look follows the Ronas IT "Habit Tracker App" concept on Dribbble (colours, type,
+card grid, week strip), with **no mascot**.
+
+Status: the plan is settled after a grilling session (Oct 2026). Next step is building.
 
 ---
 
-## 1. Getting data from the Fitbit Air (the riskiest part, so it comes first)
+## 1. Decisions
 
-**The situation as of Oct 2026:**
-- The legacy **Fitbit Web API** goes away on **Oct 30, 2026**, three weeks from now.
-  Don't build on it.
-- Its replacement is the **Google Health API** (`health.googleapis.com/v4`). It has
-  steps, active energy burned, sleep with stages, and exercise sessions. Its scopes are
-  "restricted", and Google says it is limiting onboarding of new projects for now.
-- Fitbit does **not** write to Apple Health on iOS, so HealthKit can't be the main source.
+| Area | Decision |
+|---|---|
+| Platform | Native SwiftUI, **iOS 27 minimum**, built with Xcode on macOS 27 |
+| Distribution | Open source, **MIT**. The author is the first user, but nothing is hard-coded to one person, so App Store release stays possible |
+| Backend | None. All data lives on the device |
+| Data source | **Apple Health (HealthKit)**. The Google Health app (formerly Fitbit) writes Fitbit Air data into it |
+| Steps | Daily goal (default 10,000, editable), hourly, 7- and 30-day charts |
+| Calories | Goal = **all active calories** (default 500 kcal, editable). Pie chart: **Workouts vs Steps & movement**. Resting calories shown for context |
+| Sleep | Stage bar and plain-language comparisons to your own 14-day average. Default goal 7.5 h |
+| Workouts | Your own templates. Pre-loaded common exercises plus custom ones. **Sets × reps × weight × RPE per set** |
+| Scheduling | **Flexible** by default (N workouts a week), with an optional weekly schedule |
+| Logging | **After** the Fitbit syncs: Habbit detects the new strength workout and asks you to fill in what you did. Calories and heart rate come from the Fitbit. You can also log without a Fitbit workout |
+| At the gym | Read-only "Today's workout" card: targets, last time's numbers, suggested weight |
+| Progression | Double progression. Charts for estimated 1RM, weekly volume per muscle, PRs |
+| Streaks | 🔥 Daily · 💪 Weekly workouts · ⭐ Perfect Day badge · 🧊 Freezes |
+| Setup | Asks for units (kg/lb and weight step), body stats and goals. All editable later |
+| Version 1 scope | Fitness only. Custom habits come after version 1 |
 
-**Plan:**
-1. **Week 0 spike:** create a Google Cloud project, enable the Google Health API, set
-   up an OAuth consent screen in *Testing* mode with your own Google account as the
-   only test user, and use an iOS OAuth client with PKCE. Then try to read today's
-   steps from the CLI or curl.
-   - If that works, it's enough for a personal app. Testing mode needs no app
-     verification, but refresh tokens may expire every 7 days, which means
-     re-authenticating weekly. Confirm this during the spike.
-   - If Google blocks the project, fall back to option 2.
-2. **Fallback:** a third-party Fitbit→Apple Health sync app, with Habbit reading
-   **HealthKit**. iPhone steps are a last resort.
-3. **Architecture keeps this swappable.** All health data goes through one protocol,
-   so the UI never knows the source:
+## 2. Data: Apple Health
+
+**Device setup** (covered in the app's setup screens):
+1. Google Health → Connections → Apps and services → Apple Health → Turn On All.
+2. Apple Health → for each of Steps, Active Energy, Resting Energy, Walking + Running
+   Distance and Sleep: Data Sources & Access → Edit → drag **Google Health to the top**.
+
+**Reading the data:**
+- Totals use `HKStatisticsCollectionQuery` with `.cumulativeSum`. It applies the user's
+  source order and removes duplicates, so the iPhone and Fitbit are never counted twice.
+- **Priority check:** if the iPhone is supplying samples for a metric but Google Health
+  isn't, Habbit shows a "Your iPhone is overriding your Fitbit" tip with the fix steps.
+- **Data read:** `stepCount`, `activeEnergyBurned`, `basalEnergyBurned`,
+  `distanceWalkingRunning`, `sleepAnalysis` (stages), `HKWorkout` and `heartRate`.
+- Habbit **writes nothing** to Apple Health in version 1.
+- **Background updates:** `HKObserverQuery` with background delivery, so Habbit learns
+  about new workouts and sleep, plus `BGAppRefreshTask` as a backup.
+- **Known gaps:** Google Health doesn't share HRV or skin temperature. Neither is needed.
+- **Backup plan if the Google Health → Apple Health sync breaks:** the Google Health API,
+  which Bevel uses. Its access is currently restricted. Everything goes through one
+  protocol, so the source can be swapped:
 
 ```swift
 protocol HealthDataSource {
-    func steps(for day: Date) async throws -> Int
-    func activeCalories(for day: Date) async throws -> Double   // exercise/movement only
-    func sleep(for night: Date) async throws -> SleepSession?    // stages + timings
-    func exerciseSessions(for day: Date) async throws -> [ExerciseSession]
+    func dailySteps(in range: DateInterval) async throws -> [Date: Int]
+    func dailyEnergy(in range: DateInterval) async throws -> [Date: EnergySplit] // active, resting
+    func sleep(in range: DateInterval) async throws -> [SleepSession]
+    func workouts(in range: DateInterval) async throws -> [RecordedWorkout]
 }
-// GoogleHealthSource (primary) · HealthKitSource (fallback) · MockSource (dev/previews)
+// HealthKitSource (version 1) · MockSource (previews/tests) · GoogleHealthSource (backup)
 ```
 
-## 2. Features
+## 3. Features
 
-### 2.1 Steps
-- Daily step goal, e.g. 10,000, shown as the lime card on Home with a progress ring.
-- Hourly bar chart for today, plus 7- and 30-day trends.
-- When the goal is hit: check mark, haptic, and the day counts toward the streak.
+### 3.1 Calories
+- **Ring:** active kcal compared with the goal.
+- **Pie chart:**
+  - **Workouts:** the summed `totalEnergyBurned` of the day's `HKWorkout`s. If a
+    workout has no energy value, use the active energy recorded during its time window.
+  - **Steps & movement:** total active calories minus workout calories, never below 0.
+- **Below the chart:** "Resting 1,149 kcal · Total 1,299 kcal", matching the Fitbit
+  headline number.
 
-### 2.2 Calories ("burn X through exercise")
-Fitbit's headline number is **total = BMR (maintenance) + active**. You want a goal you
-reach through movement, so the app tracks two numbers:
+### 3.2 Sleep
+- A night is the main sleep session ending between 3 pm the previous day and 3 pm on
+  the day it belongs to. Naps are shown separately.
+- **Stage bar** (Awake / REM / Light, which HealthKit calls Core / Deep) with plain lines:
+  - "You slept **7 h 12 m**, 18 m short of your goal."
+  - "Deep + REM **2 h 05 m**, about normal for you." (Normal means within ±15% of
+    your 14-day median.)
+  - "Bedtime was 48 m later than usual."
+- **Weekly view:** duration bars and a bedtime-consistency band.
+- Informational only, with no medical claims.
 
-| Metric | Meaning | Use |
+### 3.3 Workouts and progressive overload
+
+**Domain model (SwiftData):**
+```
+Exercise         name, muscleGroups[], equipment, isCustom
+WorkoutTemplate  name ("Push A"), [TemplateExercise]
+TemplateExercise exercise, order, targetSets, repRange (min...max), targetRPE
+Schedule         mode: .flexible(perWeek: Int) | .weekly([Weekday: WorkoutTemplate?])
+WorkoutLog       template?, start, end, healthKitWorkoutID?, energyKcal?, avgHR?
+LoggedExercise   exercise, order, [LoggedSet]
+LoggedSet        weight, reps, rpe (6.0–10.0 in 0.5 steps), isWarmup
+UserSettings     unit (kg/lb), weightStep, goals, bodyStats
+```
+
+**Logging flow:**
+1. The Fitbit records a strength workout (`traditionalStrengthTraining` /
+   `functionalStrengthTraining`, among others) and it reaches Apple Health.
+2. Habbit's observer fires. It finds an `HKWorkout` with no linked `WorkoutLog` and
+   sends a notification: "52-min strength session at 6:10 pm. What did you train?"
+3. The log sheet, styled like the green session screen, opens with the template's
+   exercises already filled in from targets or last time. You adjust weight, reps and
+   RPE per set and save. The log is linked by `healthKitWorkoutID`.
+4. **No Fitbit workout:** use "Log workout" and enter start and end times by hand.
+   Calories are recorded as "not recorded".
+
+**"Today's workout" card** (read-only, for the gym): the next template in the rotation,
+or the scheduled one. Each exercise shows target sets × rep range @ RPE, last time's
+sets, and the **suggested weight**.
+
+**Overload engine** (pure Swift, unit-tested). Rules for each exercise, based on the
+last session's working sets:
+- Every set reached `repRange.max` with RPE ≤ 8: **weight + weightStep**.
+- Any set fell below `repRange.min`, or RPE ≥ 9.5, in **two sessions in a row**:
+  **deload ~10%**, rounded to the weight step.
+- Otherwise: **same weight, aim for +1 rep**.
+- **Progress metrics:**
+  - Estimated 1RM (Epley: `w × (1 + reps/30)`, sets of 12 reps or fewer)
+  - Weekly sets and volume per muscle group
+  - PRs: best estimated 1RM, and best weight at a given rep count
+
+### 3.4 Streaks
+- **🔥 Daily streak:** a day counts when all *enabled* daily goals are met. Steps is on
+  by default; active kcal and sleep can be switched on. Today stays "in progress" until
+  midnight and never breaks the streak early.
+- **💪 Weekly workout streak:** a week (Mon–Sun, configurable) counts when the workout
+  target is met: N logs in flexible mode, or every scheduled workout in weekly mode.
+- **⭐ Perfect Day:** all daily goals met **and** a workout logged. It earns a badge and
+  a bigger celebration, but it isn't its own streak.
+- **🧊 Freezes:** earn 1 per 7 consecutive daily-streak days, bank up to 2, and they're
+  used automatically to cover one missed day. They apply to the daily streak only.
+- **Milestones:** 3, 7, 14, 30, 50, 100, 200 and 365 days, celebrated with confetti
+  and haptics.
+- **Streaks are recalculated, never stored as counters.** They're derived from daily
+  data, so late syncs and edits always give the right answer.
+
+## 4. Design system
+
+| Token | Value | Use |
 |---|---|---|
-| **Active burn**, the goal metric | Calories from movement and workouts only | Goal, e.g. 600 kcal. Fills the ring. |
-| Total burn, for context | BMR + active, matching the Fitbit app | Shown smaller beneath |
-
-- Google Health API returns *active energy burned*. The app calculates BMR on the device
-  (Mifflin-St Jeor, from your age, height, weight and sex, entered in onboarding), so the
-  total roughly matches what the Fitbit app shows.
-- Breakdown: "Workouts 380 kcal · Walking/other 220 kcal". It uses exercise sessions
-  from Fitbit, with logged lifting sessions matched by time.
-
-### 2.3 Workout plan and progressive overload
-**Data model (SwiftData):**
-```
-WorkoutPlan ─┬─ PlanDay (e.g. "Push", weekday Mon/Thu)
-             └── PlannedExercise (exercise, target sets, rep range 8–12, target RPE)
-WorkoutSession ── LoggedExercise ── LoggedSet (weight, reps, RPE 1–10, isWarmup)
-Exercise (name, muscle group, equipment, icon)
-```
-- **Plan builder:** build your split, and each exercise gets sets × rep range plus a
-  target effort (RPE).
-- **Live session screen,** styled like the green "Meditation" screen: big session
-  timer, current exercise, last session's numbers shown as ghost text ("Last: 60 kg × 10,
-  10, 9 @ RPE 8"), quick +/- for weight and reps, an RPE picker, a rest timer, and a
-  **Finish** button.
-- **Overload engine** (double progression, all rules on the device):
-  - All sets reach the **top of the rep range** at **RPE ≤ 8**: suggest **+2.5 kg**
-    (or +5 lb) next time.
-  - Reps drop below the range or RPE ≥ 9.5 twice in a row: suggest holding or dropping 5–10%.
-  - Otherwise: "add a rep".
-- **Progress views:** estimated 1RM per lift (Epley: `w × (1 + reps/30)`), weekly
-  volume (sets × reps × weight) per muscle group, and PR badges with a mascot celebration.
-
-### 2.4 Sleep you can actually understand
-- Last night as a **simple stage bar** (Awake / REM / Light / Deep) with plain-language
-  lines instead of jargon:
-  - "You slept **7 h 12 m**, 18 m short of your 7.5 h goal."
-  - "Deep + REM: **2 h 05 m**, about normal for you."
-  - "Bedtime was 48 m later than your usual."
-- **Your own baselines:** comparisons are against your 14-day average, not population
-  norms.
-- Weekly view: duration bars plus a bedtime-consistency band.
-- Sleep goal met counts as an optional streak goal.
-- These are informational insights only, with no medical claims.
-
-### 2.5 Streaks (the motivating part)
-- **Daily goals** are configurable. Default: *Workout done (on scheduled days)* +
-  *Steps ≥ goal*. Active calories and sleep can be added.
-- **Perfect Day** = all daily goals met. The main streak counts consecutive Perfect Days.
-- **Rest days:** a planned rest day only needs the step goal, so rest never breaks
-  the streak.
-- **Streak freezes:** earn 1 per 7-day streak, up to 2 banked, and use them
-  automatically on a missed day.
-- **Celebrations:** confetti, an animated mascot, haptics, and milestone badges at
-  3/7/14/30/50/100 days. The week strip on Home fills **lime** for completed days,
-  matching the design.
-- **Widget and notifications:** a Home/Lock Screen widget ("🔥 12 days · 6,240 / 10k
-  steps") and an evening nudge if a goal is still open at 8 pm.
-
-### 2.6 Custom habits (from the design's "Let's start a new habit" screen)
-Reading, journaling and the like use name, description, interval (every day or specific
-days) and icon/colour. They appear as cards next to the fitness cards and can optionally
-count toward the Perfect Day.
-
-## 3. Design system (from the reference shots)
-
-| Token | Approx. value | Used for |
-|---|---|---|
-| `indigo` | `#4B4FE0` | Onboarding background, + button, focus ring |
-| `lavender` | `#B8C2F2` | Hero/marketing backgrounds |
-| `lime` | `#C3EA7C` | Completed days, steps card, workout session screen |
+| `indigo` | `#4B4FE0` | Setup background, + button, focus |
+| `lavender` | `#B8C2F2` | Hero backgrounds |
+| `lime` | `#C3EA7C` | Completed days, steps, workout log sheet |
 | `butter` | `#F3D06E` | Workout card |
 | `bubblegum` | `#EE8FC6` | Calories card |
 | `sky` | `#A8C5F7` | Sleep card |
-| `tangerine` | `#F28A45` | Mascot, flame/streak accents |
-| `mint` | `#A7E4DF` | Custom-habit icons |
-| `ink` | `#111111` | Text, selected "today" pill, done checkmark |
+| `tangerine` | `#F28A45` | Streak flame, PR accents |
+| `mint` | `#A7E4DF` | Secondary accents |
+| `ink` | `#111111` | Text, "today" pill, check mark |
 | `paper` | `#FFFFFF` / `#F5F5F7` | Background / inputs |
 
-- **Type:** a heavy rounded display face for headings and numbers ("Good morning,
-  **Mehul**", "34 min 46 s"), for example *Archivo Black* or *Rubik Bold*. *Inter* for body.
-- **Shapes:** 20–24 pt rounded cards in a 2-column grid, circular check toggles in the
-  top-right, pill day chips.
-- **Mascot:** the orange character belongs to Ronas IT. Use a similar *original*
-  character (commissioned, or drawn and animated with Rive/Lottie) with states: idle,
-  cheering (goal hit), flexing (PR), sleepy (sleep screen).
+- **Type:** a heavy rounded display face for headings and big numbers (Archivo Black or
+  Rubik Bold, both under the Open Font License and bundled). SF Pro or Inter for body.
+- **Shapes:** 20–24 pt rounded cards in a 2-column grid, circular check toggles, pill
+  day chips.
+- **No mascot:** celebrations use confetti, haptics, bold numbers and an animated flame.
+- **Dark mode:** pastel cards stay, and the background switches to near-black.
 
 **Screens:**
-1. **Onboarding** (indigo): "Build healthy habits with us" → Connect Fitbit → body stats
-   for BMR → set goals.
-2. **Home:** greeting, scrollable week strip, card grid (Steps · Workout · Active kcal ·
-   Sleep · custom habits), tab bar (Home · **+** · Profile).
-3. **Workout session** (lime): timer, set logger, rest timer, Finish.
-4. **Detail screens:** Steps, Calories, Sleep, and Progress (lift charts).
-5. **Sheets:** New habit / New exercise / Edit plan, styled like the design's form sheet.
-6. **Profile:** streak calendar, badges, goals, data source settings.
+1. **Setup** (indigo):
+   - Welcome
+   - Connect Apple Health, with the source-order walkthrough
+   - Units and weight step
+   - Body stats
+   - Goals
+   - Workout plan: pick from presets or build your own, then flexible or weekly mode
+2. **Home:**
+   - "Good morning, {name}"
+   - Week strip: lime = daily goals met, ink = today
+   - 🔥/💪 streak chips
+   - Cards: Steps · Workout (today's) · Active kcal · Sleep
+   - Tab bar: Home · **+** (log workout) · Profile
+3. **Detail screens:** Steps, Calories (pie chart), Sleep, Workout history and progress.
+4. **Sheets:** log a workout, edit a template, add an exercise.
+5. **Profile:** streak calendar, badges, goals, units, data-source health check.
 
-## 4. Tech stack
-
-- **SwiftUI, iOS 17+**, **SwiftData** for local storage, **Swift Charts**.
-- **OAuth:** `ASWebAuthenticationSession` with PKCE. Tokens go in the **Keychain**.
-- **Sync:** fetch on app open and pull-to-refresh, plus `BGAppRefreshTask` every ~1–2 h,
-  with results cached in SwiftData so the app works offline.
-- **WidgetKit** for the streak widget, **UserNotifications** for nudges.
-- **No backend.** It's a single-user app, so everything stays on the phone.
-- **What you'll need:** a Mac with Xcode 16+ to build and run it (this cloud session can
-  write the code but can't compile iOS). A free Apple ID works for side-loading but
-  apps expire after 7 days. The $99/yr developer account removes that limit and enables
-  TestFlight.
+## 5. Project layout
 
 ```
-Habbit/
-  App/              HabbitApp.swift, RootView
-  DesignSystem/     Colors, Typography, Card, DayStrip, CheckToggle, Mascot
+Habbit.xcodeproj
+Habbit/                       app target
+  App/                        HabbitApp, RootView, AppState
+  DesignSystem/               Colors, Typography, Card, WeekStrip, CheckToggle, Confetti
   Features/
-    Home/  Steps/  Calories/  Sleep/  Workout/  Streaks/  Habits/  Onboarding/  Profile/
+    Onboarding/ Home/ Steps/ Calories/ Sleep/ Workouts/ Streaks/ Profile/
   Data/
-    Models/         SwiftData models
-    Health/         HealthDataSource, GoogleHealthSource, HealthKitSource, MockSource
-    Auth/           OAuthManager, KeychainStore
-    Sync/           SyncService, BackgroundRefresh
-  Domain/           OverloadEngine, StreakEngine, BMRCalculator, SleepInsights
-  Widgets/
-  Tests/            OverloadEngine, StreakEngine, BMR, sleep-insight tests
+    Models/                   SwiftData models
+    Health/                   HealthDataSource, HealthKitSource, MockSource
+    Sync/                     HealthObserver, BackgroundRefresh, WorkoutMatcher
+  Resources/                  Fonts, exercise seed JSON
+HabbitWidgets/                streak + steps widget
+Packages/HabbitCore/          Swift package, pure logic, no UIKit or HealthKit
+  Sources/HabbitCore/         OverloadEngine, StreakEngine, SleepInsights,
+                              CalorieBreakdown, WorkoutMatcher, Units
+  Tests/HabbitCoreTests/
+LICENSE (MIT) · README.md · PLAN.md
 ```
 
-## 5. Build phases
+All the decision-making logic lives in **`HabbitCore`**, a standalone Swift package
+built test-first. `swift test` runs it on the Mac without a simulator.
 
-| Phase | Scope | Done when |
+## 6. Build phases
+
+| # | Phase | Done when |
 |---|---|---|
-| **0. Spike** (1–2 days) | Google Health API access test with your account | Today's steps, sleep and active kcal print from a real API call |
-| **1. Skeleton and design system** | Xcode project, tokens, components, Home with `MockSource` | Home looks like the reference design with fake data |
-| **2. Fitbit connection** | OAuth, `GoogleHealthSource`, sync and cache | Real steps, calories and sleep on Home |
-| **3. Workouts** | Plan builder, live session, overload engine and charts | Can run a full session and get next-time suggestions |
-| **4. Streaks** | Goal rules, Perfect Day, freezes, celebrations, week strip | Streak updates live, with confetti and the mascot |
-| **5. Sleep and calorie detail** | Insights, charts, BMR | Plain-language sleep summary and an active vs total breakdown |
-| **6. Polish** | Widget, notifications, custom habits, mascot animations | Daily-driver ready |
+| 1 | **HabbitCore** (test-first): overload, streaks, calorie breakdown, sleep insights, workout matching | `swift test` passes |
+| 2 | **Xcode project and design system**: tokens, fonts, components, Home with `MockSource` | Home looks like the reference design with fake data |
+| 3 | **Apple Health**: permissions, `HealthKitSource`, priority check, observers | Real Fitbit steps, kcal and sleep on Home |
+| 4 | **Workouts**: templates, exercise seed data, log sheet, workout detection and notification, Today card | Log a Fitbit-recorded session and see the next suggestion |
+| 5 | **Streaks and celebrations**: week strip, chips, freezes, milestones, confetti | Streaks update correctly from real data |
+| 6 | **Detail screens**: calorie pie, sleep insights, progress charts | Every card opens to a useful detail screen |
+| 7 | **Setup and polish**: onboarding, widget, evening nudge, dark mode, README | Ready to use daily and to open-source |
+| later | Custom habits, Google Health API source, App Store | |
 
-The domain logic (overload, streaks, BMR, sleep insights) is pure Swift with unit tests,
-so it can be written and tested before the UI exists.
+## 7. Getting your Mac ready
 
-## 6. Open questions
-
-1. Can your Google account get Google Health API access? Phase 0 answers this.
-2. kg or lb, and your smallest plate increment (2.5 kg / 5 lb / 1.25 kg)?
-3. Your current split (PPL, Upper/Lower, full-body) and how many days a week?
-4. Default goals: steps, active kcal, sleep hours?
-5. Should the streak need *both* a workout and steps, or is either one enough?
-6. Do you have a Mac with Xcode, and an Apple Developer account?
+1. Install **Xcode** (the version with the iOS 27 SDK) from the Mac App Store. It's
+   large, so start the download early.
+2. Open Xcode → Settings → Accounts → add your Apple ID. Free signing works, but apps
+   expire after 7 days. The $99/yr developer account removes that limit and enables
+   TestFlight.
+3. iPhone: Settings → Privacy & Security → **Developer Mode** on. Then connect it by
+   cable once.
