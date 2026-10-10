@@ -155,6 +155,7 @@ last session's working sets:
 | `ink` | `#111111` | Text, "today" pill, check mark |
 | `paper` | `#FFFFFF` / `#F5F5F7` | Background / inputs |
 
+- **Mockups:** `docs/design/mockups.html` (also published as a private Artifact) is the visual reference for every screen.
 - **Type:** a heavy rounded display face for headings and big numbers (Archivo Black or
   Rubik Bold, both under the Open Font License and bundled). SF Pro or Inter for body.
 - **Shapes:** 20–24 pt rounded cards in a 2-column grid, circular check toggles, pill

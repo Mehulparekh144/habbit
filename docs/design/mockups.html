@@ -1,0 +1,777 @@
+<title>Habbit Screen Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a gallery of iPhone frames on a lavender-tinted ground, each with a caption; phones keep the app's own light palette. */
+:root {
+  /* page (theme-aware) */
+  --page-bg: #ECEEFA;
+  --page-fg: #15162A;
+  --page-muted: #5B5E7A;
+  --page-line: #D3D7F0;
+  --page-chip: #FFFFFF;
+  --page-accent: #4B4FE0;
+  /* app tokens (the app's light theme, fixed inside phones) */
+  --indigo: #4B4FE0;
+  --lavender: #B8C2F2;
+  --lime: #C3EA7C;
+  --butter: #F3D06E;
+  --bubblegum: #EE8FC6;
+  --sky: #A8C5F7;
+  --tangerine: #F28A45;
+  --mint: #A7E4DF;
+  --ink: #111111;
+  --ink-2: #55576A;
+  --paper: #FFFFFF;
+  --paper-2: #F3F3F6;
+  --frame: #111111;
+  /* type */
+  --display: "Archivo Black", "Arial Black", "Helvetica Neue", sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page-bg: #11121C; --page-fg: #ECEDF7; --page-muted: #A2A5C2;
+    --page-line: #2A2C42; --page-chip: #1C1E2E; --page-accent: #9EA3FF;
+    --frame: #2B2C36; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page-bg: #11121C; --page-fg: #ECEDF7; --page-muted: #A2A5C2;
+  --page-line: #2A2C42; --page-chip: #1C1E2E; --page-accent: #9EA3FF;
+  --frame: #2B2C36; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font-family: var(--body);
+  padding-inline: 16px;
+  padding-block: 32px 64px;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+header.page { display: flex; flex-direction: column; gap: 10px; max-width: 70ch; }
+.brand { font-family: var(--display); font-size: 15px; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; color: var(--page-accent); }
+.brand svg { width: 18px; height: 18px; fill: var(--tangerine); }
+header.page h1 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 5vw, 46px); line-height: 1.02; margin: 0; text-wrap: balance; }
+header.page p { margin: 0; color: var(--page-muted); font-size: 16px; line-height: 1.55; }
+
+nav.jump { display: flex; flex-wrap: wrap; gap: 8px; }
+nav.jump a {
+  font: 600 13px var(--body); color: var(--page-fg); text-decoration: none;
+  background: var(--page-chip); border: 1px solid var(--page-line);
+  padding: 7px 12px; border-radius: 999px;
+}
+nav.jump a:hover, nav.jump a:focus-visible { border-color: var(--page-accent); outline: none; }
+
+.gallery {
+  display: grid; gap: 40px 28px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  justify-items: center;
+}
+figure.shot { margin: 0; display: flex; flex-direction: column; gap: 14px; width: 300px; max-width: 100%; scroll-margin-top: 24px; }
+figure.shot.flash .phone { box-shadow: 0 0 0 4px var(--page-accent), 0 20px 50px -20px rgba(20,20,60,.45); }
+figcaption { display: flex; flex-direction: column; gap: 4px; padding-inline: 4px; }
+figcaption b { font: 700 15px var(--body); }
+figcaption span { font-size: 13px; color: var(--page-muted); line-height: 1.45; }
+
+/* ---------- phone frame ---------- */
+.phone {
+  width: 300px; max-width: 100%; height: 630px;
+  border-radius: 46px; border: 9px solid var(--frame);
+  background: var(--paper); color: var(--ink);
+  overflow: hidden; position: relative;
+  box-shadow: 0 20px 50px -20px rgba(20,20,60,.45);
+  transition: box-shadow .25s;
+}
+.screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; font-family: var(--body); }
+.screen::-webkit-scrollbar { display: none; }
+.status { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px 0; height: 38px; font: 700 12px var(--body); position: relative; }
+.status::after { content: ""; position: absolute; left: 50%; top: 9px; transform: translateX(-50%); width: 84px; height: 24px; border-radius: 20px; background: #000; }
+.status .sig { display: flex; gap: 4px; align-items: center; }
+.status .sig i { display: block; width: 16px; height: 8px; border-radius: 2px; border: 1.5px solid currentColor; }
+.pad { padding: 10px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.h-display { font-family: var(--display); font-weight: 400; letter-spacing: -.01em; margin: 0; }
+.muted { color: var(--ink-2); }
+.ico { width: 18px; height: 18px; fill: currentColor; flex: none; }
+.home-bar { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%); width: 100px; height: 4px; border-radius: 4px; background: var(--ink); opacity: .85; }
+button { font-family: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--indigo); outline-offset: 2px; }
+
+/* ---------- 1. welcome ---------- */
+.welcome { background: var(--indigo); color: #fff; display: flex; flex-direction: column; }
+.welcome .status::after { background: #000; }
+.welcome .body { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 26px 22px 30px; gap: 18px; }
+.welcome h2 { font-size: 30px; line-height: 1.02; }
+.flame-hero { width: 150px; height: 170px; position: relative; margin-block: 6px; }
+.flame-hero .blob { position: absolute; inset: 22px 0 0; border-radius: 50%; background: var(--lime); transform: scaleY(.55) translateY(70%); }
+.flame-hero svg { position: relative; width: 150px; height: 150px; }
+.ring-row { display: flex; gap: 8px; }
+.ring-row span { font: 700 11px var(--body); background: rgba(255,255,255,.14); padding: 6px 10px; border-radius: 999px; display: flex; gap: 5px; align-items: center; }
+.btn-white { width: 100%; border: 0; background: #fff; color: var(--ink); font: 700 14px var(--body); padding: 15px; border-radius: 16px; }
+.welcome small { font-size: 10.5px; opacity: .8; line-height: 1.4; }
+.welcome small u { text-underline-offset: 2px; }
+
+/* ---------- 2. home ---------- */
+.greet { display: flex; justify-content: space-between; align-items: flex-start; }
+.greet p { margin: 0; font: 600 13px var(--body); }
+.greet h2 { font-size: 27px; line-height: 1; }
+.greet .icons { display: flex; gap: 10px; padding-top: 4px; }
+.greet .bell { position: relative; }
+.greet .bell::after { content: ""; position: absolute; top: -1px; right: -1px; width: 7px; height: 7px; border-radius: 50%; background: var(--tangerine); border: 1.5px solid #fff; }
+.week { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; margin-inline: -2px; }
+.week::-webkit-scrollbar { display: none; }
+.day { flex: 0 0 auto; width: 38px; border: 0; border-radius: 13px; padding: 7px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 1px; background: var(--paper-2); position: relative; }
+.day b { font: 400 13px var(--display); }
+.day small { font: 600 9.5px var(--body); }
+.day.done { background: var(--lime); }
+.day.today { background: var(--ink); color: #fff; }
+.day.freeze { background: var(--mint); }
+.day.freeze::after { content: "❄"; position: absolute; top: -5px; right: -3px; font-size: 10px; background: #fff; border-radius: 50%; width: 15px; height: 15px; display: grid; place-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.day.future { color: #9a9cad; }
+.chips { display: flex; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 700 11.5px var(--body); background: var(--paper-2); padding: 6px 10px; border-radius: 999px; }
+.chip .ico { width: 14px; height: 14px; }
+.chip.flame .ico { fill: var(--tangerine); }
+.chip.lift .ico { fill: var(--indigo); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.card { border: 0; text-align: left; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 6px; min-height: 128px; position: relative; color: var(--ink); }
+.card .top { display: flex; justify-content: space-between; align-items: center; }
+.card .ico { width: 20px; height: 20px; }
+.card .t { font: 700 12.5px var(--body); margin-top: auto; }
+.card .s { font: 500 10.5px var(--body); opacity: .75; }
+.card .big { font: 400 20px/1 var(--display); }
+.card .big small { font: 600 10px var(--body); opacity: .7; }
+.tick { width: 20px; height: 20px; border-radius: 50%; border: 1.6px solid var(--ink); display: grid; place-items: center; flex: none; }
+.tick.on { background: var(--ink); }
+.tick.on svg { width: 11px; height: 11px; fill: #fff; }
+.bar { height: 6px; border-radius: 6px; background: rgba(17,17,17,.12); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--ink); border-radius: 6px; }
+.c-steps { background: var(--lime); }
+.c-work { background: var(--butter); }
+.c-kcal { background: var(--bubblegum); }
+.c-sleep { background: var(--sky); }
+.badge-new { font: 700 9.5px var(--body); background: var(--ink); color: #fff; padding: 3px 7px; border-radius: 999px; }
+.mini-ring { width: 34px; height: 34px; }
+.tabbar { position: sticky; bottom: 0; background: linear-gradient(to top, #fff 70%, rgba(255,255,255,0)); display: flex; justify-content: space-around; align-items: center; padding: 14px 30px 22px; }
+.tabbar .tab { border: 0; background: none; width: 40px; height: 40px; display: grid; place-items: center; color: var(--ink); }
+.tabbar .tab .ico { width: 22px; height: 22px; }
+.tabbar .plus { width: 54px; height: 44px; border-radius: 16px; background: var(--indigo); color: #fff; border: 0; display: grid; place-items: center; }
+.tabbar .plus .ico { width: 22px; height: 22px; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--tangerine); color: #fff; display: grid; place-items: center; font: 400 12px var(--display); }
+
+/* ---------- 3. today's workout ---------- */
+.topnav { display: flex; align-items: center; justify-content: space-between; }
+.round { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--paper-2); display: grid; place-items: center; }
+.round .ico { width: 16px; height: 16px; }
+.eyebrow { font: 700 10.5px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.today-head h2 { font-size: 26px; line-height: 1.02; }
+.progress-dots { display: flex; gap: 4px; align-items: center; font: 600 11px var(--body); color: var(--ink-2); }
+.progress-dots i { width: 22px; height: 6px; border-radius: 4px; background: var(--paper-2); display: block; }
+.progress-dots i.on { background: var(--indigo); }
+.ex { background: var(--paper-2); border-radius: 18px; padding: 11px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ex .row1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.ex .name { font: 700 13px var(--body); }
+.ex .target { font: 600 10.5px var(--body); color: var(--ink-2); white-space: nowrap; }
+.ex .last { font: 500 11px var(--body); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ex .next { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; border-radius: 12px; padding: 7px 9px; }
+.ex .next b { font: 400 15px var(--display); font-variant-numeric: tabular-nums; }
+.ex .next b small { font: 600 10px var(--body); color: var(--ink-2); }
+.tag { font: 700 9.5px var(--body); padding: 4px 7px; border-radius: 999px; white-space: nowrap; }
+.tag.up { background: var(--tangerine); color: #fff; }
+.tag.same { background: var(--sky); color: var(--ink); }
+.tag.down { background: var(--paper-2); color: var(--ink); border: 1px solid #d9d9e0; }
+
+/* ---------- 4. log sheet ---------- */
+.sheet { background: var(--lime); }
+.sheet .pad { gap: 10px; }
+.sheet h2 { font-size: 22px; line-height: 1.05; }
+.fitbit { background: rgba(255,255,255,.7); border-radius: 16px; padding: 10px 11px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.fitbit .src { grid-column: 1 / -1; font: 600 10px var(--body); color: var(--ink-2); display: flex; align-items: center; gap: 5px; }
+.fitbit .src i { width: 7px; height: 7px; border-radius: 50%; background: #2bb673; display: block; }
+.fitbit div b { display: block; font: 400 15px var(--display); font-variant-numeric: tabular-nums; }
+.fitbit div span { font: 600 9.5px var(--body); color: var(--ink-2); }
+.seg { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button { flex: none; border: 0; border-radius: 999px; padding: 7px 11px; font: 700 11px var(--body); background: rgba(255,255,255,.6); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.logex { background: #fff; border-radius: 18px; padding: 11px 10px; display: flex; flex-direction: column; gap: 7px; }
+.logex .hd { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding-inline: 2px; }
+.logex .hd b { font: 700 13px var(--body); }
+.logex .hd span { font: 600 10px var(--body); color: var(--ink-2); }
+.suggest { font: 600 10.5px var(--body); background: #FFF1E7; color: #8A3B0B; border-radius: 10px; padding: 6px 8px; display: flex; align-items: center; gap: 6px; }
+.suggest .ico { width: 13px; height: 13px; fill: var(--tangerine); }
+.setgrid { display: grid; grid-template-columns: 18px 1fr 1fr 46px 26px; gap: 5px; align-items: center; font-variant-numeric: tabular-nums; }
+.setgrid .lab { font: 700 9px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); text-align: center; }
+.setgrid .n { font: 700 11px var(--body); color: var(--ink-2); text-align: center; }
+.setgrid input { width: 100%; min-width: 0; border: 0; background: var(--paper-2); border-radius: 9px; padding: 7px 4px; text-align: center; font: 700 13px var(--body); color: var(--ink); }
+.rpe { border: 0; background: var(--paper-2); border-radius: 9px; padding: 7px 0; font: 700 12px var(--body); }
+.rpe.hi { background: #FFE0CF; }
+.setcheck { width: 24px; height: 24px; border-radius: 50%; border: 1.6px solid var(--ink); background: none; display: grid; place-items: center; padding: 0; }
+.setcheck svg { width: 12px; height: 12px; fill: #fff; opacity: 0; }
+.setcheck[aria-pressed="true"] { background: var(--ink); }
+.setcheck[aria-pressed="true"] svg { opacity: 1; }
+.collapsed { background: rgba(255,255,255,.65); border-radius: 16px; padding: 11px 12px; display: flex; justify-content: space-between; align-items: center; font: 700 12.5px var(--body); }
+.collapsed span { font: 600 10.5px var(--body); color: var(--ink-2); }
+.btn-ink { border: 0; background: var(--ink); color: #fff; font: 700 14px var(--body); padding: 14px; border-radius: 16px; width: 100%; }
+.saved-note { font: 600 11px var(--body); text-align: center; color: var(--ink); min-height: 14px; }
+
+/* ---------- 5. calories ---------- */
+.detail h2 { font-size: 22px; }
+.bignum { display: flex; align-items: baseline; gap: 6px; }
+.bignum b { font: 400 40px/1 var(--display); font-variant-numeric: tabular-nums; }
+.bignum span { font: 600 13px var(--body); color: var(--ink-2); }
+.donut-wrap { display: grid; place-items: center; position: relative; padding-block: 4px; }
+.donut-wrap svg { width: 190px; height: 190px; }
+.donut-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.donut-center b { display: block; font: 400 26px/1 var(--display); }
+.donut-center span { font: 600 10.5px var(--body); color: var(--ink-2); }
+.legend { display: flex; flex-direction: column; gap: 6px; }
+.legend .li { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center; background: var(--paper-2); border-radius: 14px; padding: 10px 11px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 4px; }
+.legend .li b { font: 700 12px var(--body); display: block; }
+.legend .li small { font: 500 10px var(--body); color: var(--ink-2); }
+.legend .li .v { font: 400 15px var(--display); font-variant-numeric: tabular-nums; }
+.context { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.context div { border: 1.5px dashed #d4d5de; border-radius: 14px; padding: 9px 11px; }
+.context b { display: block; font: 400 16px var(--display); font-variant-numeric: tabular-nums; }
+.context span { font: 600 10px var(--body); color: var(--ink-2); }
+
+/* ---------- 6. sleep ---------- */
+.sleep-top { background: var(--sky); border-radius: 22px; padding: 13px; display: flex; flex-direction: column; gap: 8px; }
+.sleep-top .bignum b { font-size: 34px; }
+.hypno svg { width: 100%; height: auto; display: block; }
+.hypno text { font: 600 8px var(--body); fill: var(--ink-2); }
+.insights { display: flex; flex-direction: column; gap: 6px; }
+.insight { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; background: var(--paper-2); border-radius: 14px; padding: 9px 10px; font: 500 11.5px/1.4 var(--body); }
+.insight b { font-weight: 700; }
+.insight .dot { width: 22px; height: 22px; border-radius: 8px; display: grid; place-items: center; }
+.insight .dot .ico { width: 13px; height: 13px; }
+.weekbars svg { width: 100%; height: auto; display: block; }
+.weekbars text { font: 600 8.5px var(--body); fill: var(--ink-2); }
+
+/* ---------- 7. progress ---------- */
+.prs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.prs::-webkit-scrollbar { display: none; }
+.pr { flex: none; background: var(--butter); border-radius: 14px; padding: 9px 11px; min-width: 112px; }
+.pr span { font: 600 9.5px var(--body); color: var(--ink-2); display: block; }
+.pr b { font: 400 16px var(--display); font-variant-numeric: tabular-nums; }
+.pr.alt { background: var(--paper-2); }
+.chartcard { background: var(--paper-2); border-radius: 18px; padding: 11px; display: flex; flex-direction: column; gap: 6px; }
+.chartcard .hd { display: flex; justify-content: space-between; align-items: baseline; }
+.chartcard .hd b { font: 700 12.5px var(--body); }
+.chartcard .hd span { font: 600 10px var(--body); color: var(--ink-2); }
+.chartcard svg { width: 100%; height: auto; display: block; }
+.chartcard text { font: 600 8px var(--body); fill: var(--ink-2); }
+
+/* ---------- 8. celebration ---------- */
+.celebrate { background: var(--indigo); color: #fff; }
+.celebrate canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.celebrate .body { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 22px 30px; gap: 12px; }
+.celebrate .num { font: 400 108px/0.9 var(--display); letter-spacing: -.03em; }
+.celebrate .lbl { font: 400 22px/1 var(--display); }
+.celebrate p { margin: 0; font: 500 13px/1.45 var(--body); opacity: .9; max-width: 30ch; }
+.flame-anim { width: 92px; height: 92px; transform-origin: 50% 90%; animation: flicker 1.6s ease-in-out infinite; }
+@keyframes flicker { 0%,100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.06,1.1) rotate(2deg); } }
+.miles { display: flex; gap: 5px; margin-top: 4px; }
+.miles span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 400 11px var(--display); background: rgba(255,255,255,.14); }
+.miles span.got { background: var(--lime); color: var(--ink); }
+.miles span.now { background: var(--tangerine); color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.5); }
+.freeze-card { background: rgba(255,255,255,.12); border-radius: 16px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; text-align: left; font: 600 11.5px/1.35 var(--body); width: 100%; }
+.freeze-card .fz { width: 32px; height: 32px; border-radius: 10px; background: var(--mint); color: var(--ink); display: grid; place-items: center; font-size: 16px; flex: none; }
+.celebrate .btn-white { margin-top: 6px; }
+.replay { border: 0; background: none; color: #fff; font: 600 12px var(--body); text-decoration: underline; text-underline-offset: 3px; opacity: .85; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flame-anim { animation: none; }
+  html { scroll-behavior: auto; }
+}
+html { scroll-behavior: smooth; }
+
+footer.notes { max-width: 70ch; color: var(--page-muted); font-size: 13.5px; line-height: 1.55; border-top: 1px solid var(--page-line); padding-top: 16px; }
+footer.notes b { color: var(--page-fg); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 3.6 5.2 6.1 5.2 11.2A5.2 5.2 0 0 1 6.8 13.2c0-2.6 1.3-4.2 2.6-5.4.3 1.8 1.2 2.8 2.3 3.3C11 8.4 11.3 5 12 2z"/></symbol>
+    <symbol id="i-steps" viewBox="0 0 24 24"><path d="M8 2.5c-1.8 0-3.2 2.1-3.2 4.7S6 11.8 7.6 11.8s2.7-1.8 2.7-4.4S9.8 2.5 8 2.5zM5.8 13.6h3.6v2.6a1.8 1.8 0 0 1-3.6 0zM16 6.5c-1.8 0-3.2 2.1-3.2 4.7s1.2 4.6 2.8 4.6 2.7-1.8 2.7-4.4-.5-4.9-2.3-4.9zM13.8 17.6h3.6v1.6a1.8 1.8 0 0 1-3.6 0z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.4 8.4 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M2.5 9.5h2v5h-2zM5.5 7h2.6v10H5.5zM15.9 7h2.6v10h-2.6zM19.5 9.5h2v5h-2zM8.1 11h7.8v2H8.1z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M9.2 16.6 4.9 12.3l-2 2 6.3 6.3L21.1 8.7l-2-2z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M10.8 3.5h2.4v7.3h7.3v2.4h-7.3v7.3h-2.4v-7.3H3.5v-2.4h7.3z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M12 3 3 10.2V21h6.5v-6h5v6H21V10.2z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15.4 4.6 8 12l7.4 7.4-1.8 1.8L4.4 12l9.2-9.2z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6.3 4.6 5.7 5.7 5.7-5.7 1.7 1.7-5.7 5.7 5.7 5.7-1.7 1.7-5.7-5.7-5.7 5.7-1.7-1.7 5.7-5.7-5.7-5.7z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 2.5a6 6 0 0 0-6 6v4.2L4 16v1.5h16V16l-2-3.3V8.5a6 6 0 0 0-6-6zM9.5 19a2.5 2.5 0 0 0 5 0z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10h3.5v10zM10.25 20V4h3.5v16zM16.5 20v-7H20v7z"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 4 4.5 11.5l1.8 1.8 4.4-4.4V20h2.6V8.9l4.4 4.4 1.8-1.8z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm1.2 9.8 3.6 3.6-1.6 1.6-4.4-4.4V6.5h2.4z"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="page">
+    <div class="brand"><svg><use href="#i-flame"/></svg>Habbit</div>
+    <h1>Screen mockups for version 1</h1>
+    <p>Eight screens in the Ronas IT style: pastel cards, chunky type, lime for done. The numbers are sample data shaped like a real Friday evening, after a push session the Fitbit Air recorded. You can tap the cards on Home, log sets, and replay the streak confetti.</p>
+  </header>
+
+  <nav class="jump" aria-label="Jump to screen">
+    <a href="#s-welcome">Welcome</a>
+    <a href="#s-home">Home</a>
+    <a href="#s-today">Today's workout</a>
+    <a href="#s-log">Log workout</a>
+    <a href="#s-kcal">Calories</a>
+    <a href="#s-sleep">Sleep</a>
+    <a href="#s-progress">Progress</a>
+    <a href="#s-streak">Streak milestone</a>
+  </nav>
+
+  <section class="gallery">
+
+    <!-- 1 WELCOME -->
+    <figure class="shot" id="s-welcome">
+      <div class="phone"><div class="screen welcome">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="body">
+          <h2 class="h-display">Build healthy habits with us</h2>
+          <div class="flame-hero" aria-hidden="true">
+            <div class="blob"></div>
+            <svg viewBox="0 0 24 24"><use href="#i-flame" fill="#F28A45"/><path d="M12 11.2c.5 1.8 2.6 3 2.6 5.3a2.6 2.6 0 0 1-5.2 0c0-1.2.6-2 1.3-2.6.2.9.6 1.4 1.1 1.6-.2-1.3 0-2.9.2-4.3z" fill="#F3D06E"/></svg>
+          </div>
+          <div class="ring-row" aria-hidden="true">
+            <span><svg class="ico" style="width:12px;height:12px"><use href="#i-steps"/></svg>Steps</span>
+            <span><svg class="ico" style="width:12px;height:12px"><use href="#i-dumbbell"/></svg>Lifts</span>
+            <span><svg class="ico" style="width:12px;height:12px"><use href="#i-moon"/></svg>Sleep</span>
+          </div>
+          <div style="margin-top:auto; width:100%; display:flex; flex-direction:column; gap:12px; align-items:center">
+            <button class="btn-white" type="button">Connect Apple Health</button>
+            <small>Habbit reads your Fitbit Air data through Google Health → Apple Health. Nothing leaves your phone. <u>Privacy</u></small>
+          </div>
+        </div>
+        <div class="home-bar" style="background:#fff"></div>
+      </div></div>
+      <figcaption><b>Welcome</b><span>The first screen of setup. The flame stands in for the mascot. Next come units, body stats, goals and your workout plan.</span></figcaption>
+    </figure>
+
+    <!-- 2 HOME -->
+    <figure class="shot" id="s-home">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="pad" style="padding-bottom:0">
+          <div class="greet">
+            <div><p>Good evening,</p><h2 class="h-display">Mehul</h2></div>
+            <div class="icons"><svg class="ico"><use href="#i-chart"/></svg><span class="bell"><svg class="ico"><use href="#i-bell"/></svg></span></div>
+          </div>
+          <div class="week" role="list" aria-label="This week">
+            <button class="day done" role="listitem" type="button"><b>5</b><small>Mon</small></button>
+            <button class="day done" role="listitem" type="button"><b>6</b><small>Tue</small></button>
+            <button class="day freeze" role="listitem" type="button" title="Freeze used"><b>7</b><small>Wed</small></button>
+            <button class="day done" role="listitem" type="button"><b>8</b><small>Thu</small></button>
+            <button class="day today" role="listitem" type="button"><b>9</b><small>Fri</small></button>
+            <button class="day future" role="listitem" type="button"><b>10</b><small>Sat</small></button>
+            <button class="day future" role="listitem" type="button"><b>11</b><small>Sun</small></button>
+          </div>
+          <div class="chips">
+            <span class="chip flame"><svg class="ico"><use href="#i-flame"/></svg>14-day streak</span>
+            <span class="chip lift"><svg class="ico"><use href="#i-dumbbell"/></svg>3 / 4 this week</span>
+          </div>
+          <div class="grid2">
+            <button class="card c-steps" type="button" data-go="s-progress" aria-label="Steps 7,840 of 10,000">
+              <div class="top"><svg class="ico"><use href="#i-steps"/></svg>
+                <svg class="mini-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14" fill="none" stroke="rgba(17,17,17,.15)" stroke-width="4"/><circle cx="18" cy="18" r="14" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round" stroke-dasharray="68.97 87.96" transform="rotate(-90 18 18)"/></svg>
+              </div>
+              <div class="big">7,840 <small>/ 10k</small></div>
+              <div class="t">Steps</div><div class="s">2,160 to go</div>
+            </button>
+            <button class="card c-work" type="button" data-go="s-log">
+              <div class="top"><svg class="ico"><use href="#i-dumbbell"/></svg><span class="badge-new">Log sets</span></div>
+              <div class="big">Push A</div>
+              <div class="t">Workout</div><div class="s">Fitbit recorded 52 min</div>
+            </button>
+            <button class="card c-kcal" type="button" data-go="s-kcal">
+              <div class="top"><svg class="ico"><use href="#i-flame"/></svg><span class="tick"></span></div>
+              <div class="big">420 <small>/ 500 kcal</small></div>
+              <div class="bar"><i style="width:84%"></i></div>
+              <div class="t">Active calories</div>
+            </button>
+            <button class="card c-sleep" type="button" data-go="s-sleep">
+              <div class="top"><svg class="ico"><use href="#i-moon"/></svg><span class="tick"></span></div>
+              <div class="big">7h 12m</div>
+              <div class="t">Sleep</div><div class="s">18 m under goal</div>
+            </button>
+          </div>
+        </div>
+        <div class="tabbar">
+          <button class="tab" type="button" aria-label="Home"><svg class="ico"><use href="#i-home"/></svg></button>
+          <button class="plus" type="button" aria-label="Log workout" data-go="s-log"><svg class="ico"><use href="#i-plus"/></svg></button>
+          <button class="tab" type="button" aria-label="Profile" data-go="s-streak"><span class="avatar">M</span></button>
+        </div>
+      </div></div>
+      <figcaption><b>Home</b><span>The week strip turns lime when the daily goals are met. Wednesday was covered by a freeze. Tap a card to jump to its screen in this gallery.</span></figcaption>
+    </figure>
+
+    <!-- 3 TODAY'S WORKOUT -->
+    <figure class="shot" id="s-today">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="pad">
+          <div class="topnav"><button class="round" type="button" aria-label="Back"><svg class="ico"><use href="#i-back"/></svg></button><span class="eyebrow">Next in rotation</span><span style="width:32px"></span></div>
+          <div class="today-head">
+            <h2 class="h-display">Push A</h2>
+            <div class="progress-dots" style="margin-top:6px"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span style="margin-left:4px">Workout 3 of 4 this week</span></div>
+          </div>
+          <div class="ex">
+            <div class="row1"><span class="name">Bench press</span><span class="target">3 × 8–12 @ 8</span></div>
+            <div class="last">Last: 60 kg × 10, 10, 10 · RPE 7.5–8</div>
+            <div class="next"><b>62.5 <small>kg</small></b><span class="tag up">↑ Add weight</span></div>
+          </div>
+          <div class="ex">
+            <div class="row1"><span class="name">Overhead press</span><span class="target">3 × 6–8 @ 8</span></div>
+            <div class="last">Last: 40 kg × 8, 8, 7 · RPE 8.5–9.5</div>
+            <div class="next"><b>40 <small>kg · aim +1 rep</small></b><span class="tag same">Same weight</span></div>
+          </div>
+          <div class="ex">
+            <div class="row1"><span class="name">Incline DB press</span><span class="target">3 × 10–12 @ 8</span></div>
+            <div class="last">Last: 24 kg × 12, 11, 10 · RPE 8</div>
+            <div class="next"><b>24 <small>kg · aim +1 rep</small></b><span class="tag same">Same weight</span></div>
+          </div>
+          <div class="ex">
+            <div class="row1"><span class="name">Lateral raise</span><span class="target">3 × 12–15 @ 8</span></div>
+            <div class="last">Last: 10 kg × 15, 15, 15 · RPE 7.5</div>
+            <div class="next"><b>12.5 <small>kg</small></b><span class="tag up">↑ Add weight</span></div>
+          </div>
+          <div class="ex">
+            <div class="row1"><span class="name">Triceps pushdown</span><span class="target">3 × 10–12 @ 8</span></div>
+            <div class="last">Last: 30 kg × 12, 12, 12 · RPE 8</div>
+            <div class="next"><b>32.5 <small>kg</small></b><span class="tag up">↑ Add weight</span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>Today's workout</b><span>Read-only, for the gym. It shows last time's numbers and the next suggestion: add 2.5 kg when every set hit the top of the rep range at RPE 8 or lower.</span></figcaption>
+    </figure>
+
+    <!-- 4 LOG WORKOUT -->
+    <figure class="shot" id="s-log">
+      <div class="phone"><div class="screen sheet">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="pad">
+          <div class="topnav"><button class="round" type="button" aria-label="Close" style="background:rgba(255,255,255,.7)"><svg class="ico"><use href="#i-close"/></svg></button><span class="eyebrow" style="color:#3d4a20">Fri · 6:10–7:02 pm</span><span style="width:32px"></span></div>
+          <h2 class="h-display">What did you train?</h2>
+          <div class="fitbit">
+            <div class="src"><i></i>Recorded by Fitbit Air · Strength training</div>
+            <div><b>52 m</b><span>Duration</span></div>
+            <div><b>312</b><span>kcal</span></div>
+            <div><b>128</b><span>avg bpm</span></div>
+          </div>
+          <div class="seg" role="group" aria-label="Template">
+            <button type="button" aria-pressed="true">Push A</button>
+            <button type="button" aria-pressed="false">Pull A</button>
+            <button type="button" aria-pressed="false">Legs A</button>
+            <button type="button" aria-pressed="false">Upper B</button>
+            <button type="button" aria-pressed="false">No template</button>
+          </div>
+          <div class="logex">
+            <div class="hd"><b>Bench press</b><span>3 × 8–12 @ RPE 8</span></div>
+            <div class="suggest"><svg class="ico"><use href="#i-up"/></svg>Up from 60 kg last time. Prefilled at 62.5 kg.</div>
+            <div class="setgrid" id="sets">
+              <span class="lab">#</span><span class="lab">kg</span><span class="lab">reps</span><span class="lab">RPE</span><span></span>
+              <span class="n">1</span><input id="w1" inputmode="decimal" value="62.5" aria-label="Set 1 weight"><input id="r1" inputmode="numeric" value="9" aria-label="Set 1 reps"><button class="rpe" type="button" data-rpe="7.5">7.5</button><button class="setcheck" type="button" aria-pressed="true" aria-label="Set 1 done"><svg><use href="#i-check"/></svg></button>
+              <span class="n">2</span><input id="w2" inputmode="decimal" value="62.5" aria-label="Set 2 weight"><input id="r2" inputmode="numeric" value="9" aria-label="Set 2 reps"><button class="rpe" type="button" data-rpe="8">8</button><button class="setcheck" type="button" aria-pressed="true" aria-label="Set 2 done"><svg><use href="#i-check"/></svg></button>
+              <span class="n">3</span><input id="w3" inputmode="decimal" value="62.5" aria-label="Set 3 weight"><input id="r3" inputmode="numeric" value="8" aria-label="Set 3 reps"><button class="rpe hi" type="button" data-rpe="9">9</button><button class="setcheck" type="button" aria-pressed="false" aria-label="Set 3 done"><svg><use href="#i-check"/></svg></button>
+            </div>
+          </div>
+          <div class="collapsed">Overhead press <span>40 kg · 3 sets</span></div>
+          <div class="collapsed">Incline DB press <span>24 kg · 3 sets</span></div>
+          <div class="collapsed">Lateral raise <span>12.5 kg · 3 sets</span></div>
+          <button class="btn-ink" type="button" id="saveLog">Save workout</button>
+          <div class="saved-note" id="savedNote" aria-live="polite"></div>
+        </div>
+      </div></div>
+      <figcaption><b>Log workout</b><span>Opens from the "Fitbit recorded a strength session" notification. Weights come prefilled from the suggestion. Tap RPE to step it from 6 to 10, and tap the circles to mark sets done.</span></figcaption>
+    </figure>
+
+    <!-- 5 CALORIES -->
+    <figure class="shot" id="s-kcal">
+      <div class="phone"><div class="screen detail">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="pad">
+          <div class="topnav"><button class="round" type="button" aria-label="Back" data-go="s-home"><svg class="ico"><use href="#i-back"/></svg></button><span class="eyebrow">Today</span><span style="width:32px"></span></div>
+          <h2 class="h-display">Active calories</h2>
+          <div class="bignum"><b>420</b><span>of 500 kcal goal · 80 to go</span></div>
+          <div class="donut-wrap">
+            <svg viewBox="0 0 200 200" role="img" aria-label="Workouts 312 kcal, steps and movement 108 kcal">
+              <circle cx="100" cy="100" r="74" fill="none" stroke="#F3F3F6" stroke-width="26"/>
+              <!-- circumference 464.96; workouts 312/420 = 74.29% = 345.4; movement 25.71% = 119.6 ; 3px gaps -->
+              <circle cx="100" cy="100" r="74" fill="none" stroke="#EE8FC6" stroke-width="26" stroke-dasharray="342.4 464.96" transform="rotate(-90 100 100)"/>
+              <circle cx="100" cy="100" r="74" fill="none" stroke="#F28A45" stroke-width="26" stroke-dasharray="116.6 464.96" stroke-dashoffset="-345.4" transform="rotate(-90 100 100)"/>
+            </svg>
+            <div class="donut-center"><div><b>84%</b><span>of goal</span></div></div>
+          </div>
+          <div class="legend">
+            <div class="li"><span class="sw" style="background:#EE8FC6"></span><div><b>Workouts</b><small>Push A · Fitbit Air, 6:10 pm</small></div><span class="v">312</span></div>
+            <div class="li"><span class="sw" style="background:#F28A45"></span><div><b>Steps &amp; movement</b><small>7,840 steps through the day</small></div><span class="v">108</span></div>
+          </div>
+          <div class="context">
+            <div><b>1,149</b><span>Resting (not in goal)</span></div>
+            <div><b>1,569</b><span>Total burn, as Fitbit shows it</span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>Calories</b><span>The goal counts active calories only. The pie splits them into workouts and everyday movement. Resting and total sit below for context. Resting matches your Apple Health screenshot.</span></figcaption>
+    </figure>
+
+    <!-- 6 SLEEP -->
+    <figure class="shot" id="s-sleep">
+      <div class="phone"><div class="screen detail">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="pad">
+          <div class="topnav"><button class="round" type="button" aria-label="Back" data-go="s-home"><svg class="ico"><use href="#i-back"/></svg></button><span class="eyebrow">Thu night → Fri</span><span style="width:32px"></span></div>
+          <div class="sleep-top">
+            <div class="bignum"><b>7h 12m</b><span>asleep</span></div>
+            <div class="hypno" id="hypno"></div>
+          </div>
+          <div class="insights">
+            <div class="insight"><span class="dot" style="background:var(--sky)"><svg class="ico"><use href="#i-moon"/></svg></span><span>You slept <b>7 h 12 m</b>, 18 m short of your 7.5 h goal.</span></div>
+            <div class="insight"><span class="dot" style="background:var(--lime)"><svg class="ico"><use href="#i-check"/></svg></span><span>Deep + REM was <b>2 h 05 m</b>, about normal for you.</span></div>
+            <div class="insight"><span class="dot" style="background:var(--butter)"><svg class="ico"><use href="#i-clock"/></svg></span><span>Bedtime was <b>48 m later</b> than your usual 10:36 pm.</span></div>
+          </div>
+          <div class="chartcard weekbars">
+            <div class="hd"><b>Last 7 nights</b><span>Goal 7.5 h</span></div>
+            <div id="weekbars"></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>Sleep</b><span>Each stage gets its own row, so the night reads at a glance. The three plain sentences compare it to your own 14-day average.</span></figcaption>
+    </figure>
+
+    <!-- 7 PROGRESS -->
+    <figure class="shot" id="s-progress">
+      <div class="phone"><div class="screen detail">
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="pad">
+          <div class="topnav"><button class="round" type="button" aria-label="Back" data-go="s-home"><svg class="ico"><use href="#i-back"/></svg></button><span class="eyebrow">Progress</span><span style="width:32px"></span></div>
+          <h2 class="h-display">Bench press</h2>
+          <div class="prs">
+            <div class="pr"><span>Est. 1RM · PR</span><b>80.0 kg</b></div>
+            <div class="pr alt"><span>Best at 10 reps</span><b>60 kg</b></div>
+            <div class="pr alt"><span>Sessions</span><b>16</b></div>
+          </div>
+          <div class="chartcard">
+            <div class="hd"><b>Estimated 1RM</b><span>+6 kg in 8 weeks</span></div>
+            <div id="e1rm"></div>
+          </div>
+          <div class="chartcard">
+            <div class="hd"><b>Sets per muscle · this week</b><span>Target 10–20</span></div>
+            <div id="muscles"></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>Progress</b><span>Estimated 1RM uses the Epley formula on your best set. The weekly sets per muscle come from the tags on the pre-loaded exercises.</span></figcaption>
+    </figure>
+
+    <!-- 8 STREAK -->
+    <figure class="shot" id="s-streak">
+      <div class="phone"><div class="screen celebrate" id="celebrate">
+        <canvas id="confetti" aria-hidden="true"></canvas>
+        <div class="status"><span>9:41</span><span class="sig">•••<i></i></span></div>
+        <div class="body">
+          <svg class="flame-anim" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flame" fill="#F28A45"/><path d="M12 11.2c.5 1.8 2.6 3 2.6 5.3a2.6 2.6 0 0 1-5.2 0c0-1.2.6-2 1.3-2.6.2.9.6 1.4 1.1 1.6-.2-1.3 0-2.9.2-4.3z" fill="#F3D06E"/></svg>
+          <div class="num">14</div>
+          <div class="lbl">day streak</div>
+          <p>Two weeks of hitting 10,000 steps. Your best run so far.</p>
+          <div class="miles" aria-label="Milestones">
+            <span class="got">3</span><span class="got">7</span><span class="now">14</span><span>30</span><span>50</span><span>100</span>
+          </div>
+          <div class="freeze-card"><span class="fz">❄</span><span>You earned a streak freeze. 2 banked, which covers up to 2 missed days.</span></div>
+          <button class="btn-white" type="button">Keep it going</button>
+          <button class="replay" type="button" id="replay">Replay confetti</button>
+        </div>
+      </div></div>
+      <figcaption><b>Streak milestone</b><span>Shows at 3, 7, 14, 30, 50, 100, 200 and 365 days. On the phone, a haptic fires with the confetti. Freezes are earned every 7 days.</span></figcaption>
+    </figure>
+
+  </section>
+
+  <footer class="notes">
+    <b>Not decided yet:</b> the final display font. Archivo Black is used here, and Rubik Bold is the other candidate. Dark mode screens and the setup flow beyond the welcome screen aren't drawn. Everything here maps to <b>PLAN.md</b> in the repo.
+  </footer>
+</div>
+
+<script>
+(function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+
+  /* ---- jump between screens from inside phones ---- */
+  document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => {
+    const t = document.getElementById(b.dataset.go);
+    if (!t) return;
+    t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    t.classList.add("flash");
+    setTimeout(() => t.classList.remove("flash"), 1200);
+  }));
+
+  /* ---- hypnogram: 11:24 pm → 7:00 am ---- */
+  (function hypno() {
+    const segs = [["A",8],["C",25],["D",30],["C",40],["R",12],["C",35],["D",22],["C",45],["A",4],["R",15],["C",50],["D",16],["C",40],["R",18],["A",6],["C",42],["R",12],["C",30],["A",6]];
+    const lanes = { A: 0, R: 1, C: 2, D: 3 };
+    const names = ["Awake", "REM", "Light", "Deep"];
+    const colors = { A: "#F28A45", R: "#4B4FE0", C: "#6E8FDB", D: "#1F2A6B" };
+    const W = 250, H = 104, L = 34, top = 4, laneH = 18, total = 456;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Sleep stages from 11:24 pm to 7:00 am" });
+    names.forEach((n, i) => {
+      el("rect", { x: L, y: top + i * laneH + 1, width: W - L, height: laneH - 2, rx: 4, fill: "rgba(255,255,255,.35)" }, svg);
+      const t = el("text", { x: 0, y: top + i * laneH + laneH / 2 + 3 }, svg); t.textContent = n;
+    });
+    let m = 0;
+    segs.forEach(([s, d]) => {
+      const x = L + (m / total) * (W - L), w = Math.max((d / total) * (W - L) - .6, 1);
+      el("rect", { x, y: top + lanes[s] * laneH + 2, width: w, height: laneH - 4, rx: 2.5, fill: colors[s] }, svg);
+      m += d;
+    });
+    [["11:24p", 0], ["1:00a", 96], ["3:00a", 216], ["5:00a", 336], ["7:00a", 456]].forEach(([lab, mm], i, arr) => {
+      const x = L + (mm / total) * (W - L);
+      const t = el("text", { x, y: H - 4, "text-anchor": i === 0 ? "start" : i === arr.length - 1 ? "end" : "middle" }, svg);
+      t.textContent = lab;
+    });
+    document.getElementById("hypno").appendChild(svg);
+  })();
+
+  /* ---- sleep week bars ---- */
+  (function weekbars() {
+    const d = [["Sat",7.9],["Sun",8.3],["Mon",6.8],["Tue",7.1],["Wed",7.4],["Thu",6.5],["Fri",7.2]];
+    const W = 250, H = 104, base = 88, max = 9, ch = 78, L = 18;
+    const y = v => base - (v / max) * ch;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Sleep duration last 7 nights" });
+    [0, 3, 6, 9].forEach(v => {
+      el("line", { x1: L, x2: W, y1: y(v), y2: y(v), stroke: "#E2E3EA", "stroke-width": 1 }, svg);
+      const t = el("text", { x: 0, y: y(v) + 3 }, svg); t.textContent = v + "h";
+    });
+    const slot = (W - L) / d.length;
+    d.forEach(([lab, v], i) => {
+      const x = L + i * slot + slot * .2, w = slot * .6;
+      el("rect", { x, y: y(v), width: w, height: base - y(v), rx: 5, fill: v >= 7.5 ? "#4B4FE0" : "#A8C5F7" }, svg);
+      const t = el("text", { x: x + w / 2, y: H - 2, "text-anchor": "middle" }, svg); t.textContent = lab;
+    });
+    el("line", { x1: L, x2: W, y1: y(7.5), y2: y(7.5), stroke: "#111", "stroke-width": 1.2, "stroke-dasharray": "3 3" }, svg);
+    document.getElementById("weekbars").appendChild(svg);
+  })();
+
+  /* ---- e1RM line ---- */
+  (function e1rm() {
+    const d = [["Aug 14",74],["Aug 21",75],["Aug 28",76],["Sep 4",76.5],["Sep 11",77.5],["Sep 18",78],["Sep 25",79],["Oct 2",80]];
+    const W = 250, H = 120, L = 24, R = 8, T = 10, B = 100, lo = 72, hi = 82;
+    const x = i => L + i * (W - L - R) / (d.length - 1);
+    const y = v => B - (v - lo) / (hi - lo) * (B - T);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Estimated one rep max rising from 74 to 80 kg" });
+    [72, 76, 80].forEach(v => {
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: "#E2E3EA", "stroke-width": 1 }, svg);
+      const t = el("text", { x: 0, y: y(v) + 3 }, svg); t.textContent = v;
+    });
+    const pts = d.map(([, v], i) => `${x(i)},${y(v)}`);
+    el("path", { d: `M${x(0)},${B} L${pts.join(" L")} L${x(d.length - 1)},${B} Z`, fill: "rgba(75,79,224,.12)" }, svg);
+    el("path", { d: `M${pts.join(" L")}`, fill: "none", stroke: "#4B4FE0", "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+    const li = d.length - 1;
+    el("circle", { cx: x(li), cy: y(d[li][1]), r: 4.5, fill: "#F28A45", stroke: "#fff", "stroke-width": 2 }, svg);
+    [0, 3, 7].forEach(i => {
+      const t = el("text", { x: x(i), y: H - 6, "text-anchor": i === 0 ? "start" : i === li ? "end" : "middle" }, svg);
+      t.textContent = d[i][0];
+    });
+    document.getElementById("e1rm").appendChild(svg);
+  })();
+
+  /* ---- sets per muscle ---- */
+  (function muscles() {
+    const d = [["Chest", 12], ["Back", 14], ["Legs", 10], ["Shoulders", 9], ["Arms", 8]];
+    const W = 250, rowH = 18, L = 54, R = 22, max = 20, H = d.length * rowH + 4;
+    const x = v => L + v / max * (W - L - R);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Weekly sets per muscle group" });
+    el("rect", { x: x(10), y: 0, width: x(20) - x(10), height: H, fill: "rgba(195,234,124,.45)", rx: 3 }, svg);
+    d.forEach(([lab, v], i) => {
+      const yy = i * rowH + 4;
+      const t = el("text", { x: 0, y: yy + 9 }, svg); t.textContent = lab;
+      el("rect", { x: L, y: yy + 2, width: x(v) - L, height: 10, rx: 5, fill: v >= 10 ? "#111" : "#9A9CAD" }, svg);
+      const n = el("text", { x: x(v) + 4, y: yy + 10 }, svg); n.textContent = v;
+    });
+    document.getElementById("muscles").appendChild(svg);
+  })();
+
+  /* ---- log sheet interactions ---- */
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    b.parentElement.querySelectorAll("button").forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+  }));
+  document.querySelectorAll(".rpe").forEach(b => b.addEventListener("click", () => {
+    let v = parseFloat(b.dataset.rpe) + 0.5;
+    if (v > 10) v = 6;
+    b.dataset.rpe = v;
+    b.textContent = Number.isInteger(v) ? String(v) : v.toFixed(1);
+    b.classList.toggle("hi", v >= 9);
+  }));
+  document.querySelectorAll(".setcheck").forEach(b => b.addEventListener("click", () => {
+    b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true"));
+  }));
+  document.getElementById("saveLog").addEventListener("click", () => {
+    const done = document.querySelectorAll('.setcheck[aria-pressed="true"]').length;
+    const rpes = [...document.querySelectorAll(".rpe")].map(b => parseFloat(b.dataset.rpe));
+    const reps = [1, 2, 3].map(i => parseInt(document.getElementById("r" + i).value, 10) || 0);
+    const allTop = reps.every(r => r >= 12) && rpes.every(r => r <= 8);
+    const next = allTop ? "Next time: 65 kg." : "Next time: stay at 62.5 kg and aim for +1 rep.";
+    document.getElementById("savedNote").textContent = `Saved ${done} of 3 bench sets. ${next}`;
+  });
+
+  /* ---- confetti ---- */
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cv = document.getElementById("confetti");
+  const ctx = cv.getContext("2d");
+  const cols = ["#C3EA7C", "#F3D06E", "#EE8FC6", "#A8C5F7", "#F28A45", "#A7E4DF", "#FFFFFF"];
+  let parts = [], raf = 0;
+  function size() {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return r;
+  }
+  function burst() {
+    if (reduce) return;
+    const r = size();
+    parts = Array.from({ length: 120 }, () => ({
+      x: r.width / 2 + (Math.random() - .5) * 40, y: r.height * .32,
+      vx: (Math.random() - .5) * 7, vy: -Math.random() * 7 - 2,
+      w: 4 + Math.random() * 5, h: 6 + Math.random() * 6,
+      a: Math.random() * Math.PI, va: (Math.random() - .5) * .3,
+      c: cols[(Math.random() * cols.length) | 0], life: 0
+    }));
+    cancelAnimationFrame(raf);
+    const step = () => {
+      ctx.clearRect(0, 0, r.width, r.height);
+      let alive = 0;
+      parts.forEach(p => {
+        p.vy += .16; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; p.life++;
+        if (p.y < r.height + 20) alive++;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.a * 2)) + 1);
+        ctx.restore();
+      });
+      if (alive) raf = requestAnimationFrame(step); else ctx.clearRect(0, 0, r.width, r.height);
+    };
+    step();
+  }
+  document.getElementById("replay").addEventListener("click", burst);
+  if ("IntersectionObserver" in window) {
+    let fired = false;
+    new IntersectionObserver((es, o) => {
+      if (es[0].isIntersecting && !fired) { fired = true; burst(); o.disconnect(); }
+    }, { threshold: .6 }).observe(document.getElementById("celebrate"));
+  }
+})();
+</script>
