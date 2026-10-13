@@ -25,7 +25,8 @@ Status: the plan is settled after a grilling session (Oct 2026). Next step is bu
 | Sleep | Stage bar and plain-language comparisons to your own 14-day average. Default goal 7.5 h |
 | Workouts | Your own templates. Pre-loaded common exercises plus custom ones. **Sets × reps × weight × RPE per set** |
 | Scheduling | **Flexible** by default (N workouts a week), with an optional weekly schedule |
-| Logging | **After** the Fitbit syncs: Habbit detects the new strength workout and asks you to fill in what you did. Calories and heart rate come from the Fitbit. You can also log without a Fitbit workout |
+| Logging | **Log by exception, no typing.** When the Fitbit workout syncs, Habbit asks "Went as planned?" and offers **✓ one tap**, **🎙 voice debrief (AI)** or **tap-to-adjust**. Calories and heart rate come from the Fitbit workout |
+| AI | **Apple Foundation Models (on-device)** turns the voice debrief into set changes. It's free, private and works offline. Optional bring-your-own Claude API key for iPhones without Apple Intelligence |
 | At the gym | Read-only "Today's workout" card: targets, last time's numbers, suggested weight |
 | Progression | Double progression. Charts for estimated 1RM, weekly volume per muscle, PRs |
 | Streaks | 🔥 Daily · 💪 Weekly workouts · ⭐ Perfect Day badge · 🧊 Freezes |
@@ -153,16 +154,58 @@ LoggedSet        weight, reps, rpe (6.0–10.0 in 0.5 steps), isWarmup
 UserSettings     unit (kg/lb), weightStep, goals, bodyStats
 ```
 
-**Logging flow:**
+**Logging flow (log by exception):** Habbit assumes the plan happened and only
+captures what went differently.
 1. The Fitbit records a strength workout (`traditionalStrengthTraining` /
    `functionalStrengthTraining`, among others) and it reaches Apple Health.
 2. Habbit's observer fires. It finds an `HKWorkout` with no linked `WorkoutLog` and
-   sends a notification: "52-min strength session at 6:10 pm. What did you train?"
-3. The log sheet, styled like the green session screen, opens with the template's
-   exercises already filled in from targets or last time. You adjust weight, reps and
-   RPE per set and save. The log is linked by `healthKitWorkoutID`.
-4. **No Fitbit workout:** use "Log workout" and enter start and end times by hand.
-   Calories are recorded as "not recorded".
+   sends a notification with actions:
+   *"Push A · 52 min. Went as planned?"* → **✓ As planned** · **🎙 What changed** · **Edit**
+   - In sessions where the progression rules raised a weight, the question names it:
+     *"Hit 62.5 × 10 on bench?"* That stops a careless tap from feeding fake progress
+     into the suggestions.
+3. **✓ As planned** logs every set at the target weight and reps, at the template's
+   target RPE. It happens straight from the notification without opening the app.
+4. **🎙 What changed** is the voice debrief (see *AI* below). You say only the
+   differences, check the short list of changes Habbit shows, and tap Save.
+5. **Tap-to-adjust:** big targets for exercise → set → **−1 rep / −2 reps / easy / hard /
+   failed**. No keyboard.
+6. **Edit:** the full sheet, as a last resort.
+7. **Backups:** if the Fitbit misses a session, start or log it from the Action Button,
+   a widget or Siri ("Start Push A"). There's also an optional Lock Screen
+   **Live Activity** during a session you start yourself, with ✓ Done / ✗ Missed reps
+   buttons.
+8. Logs link to the Fitbit workout by `healthKitWorkoutID`. Habbit-started sessions
+   save their own `HKWorkout` to Apple Health.
+
+**AI: voice debrief to set changes**
+- **Speech to text:** Apple's on-device speech recognition (`SpeechAnalyzer`) with your
+  exercise names added as custom vocabulary, so "RDL" and "lat pulldown" come out right.
+- **Text to structured changes:** **Apple Foundation Models** (on-device LLM) with
+  guided generation into Swift types, so the output is always valid structured data
+  rather than free text:
+  ```swift
+  @Generable struct Debrief { var changes: [SetChange] }
+  @Generable struct SetChange {
+      @Guide(description: "Exercise name from the provided list") var exercise: String
+      var setNumber: Int?          // nil = every set of the exercise
+      var reps: Int?
+      var weight: Double?
+      var feel: Feel?              // .easy .normal .hard .grinder .failed → RPE 6/8/9/9.5/10
+  }
+  ```
+  The prompt includes today's template and targets. The model returns **only the
+  differences**, not the whole workout.
+- **Checking:** `HabbitCore` checks every change against the template: the exercise
+  exists, the set number is in range, and reps and weight are plausible. Anything it
+  can't match shows as "Didn't catch: …" for a quick tap fix. The model's output is
+  never saved without your confirmation.
+- **No Apple Intelligence** (older iPhone, or it's switched off): use an optional
+  **Claude API key you supply yourself** (stored in the Keychain, same structured
+  output), or else the rule-based phrase parser.
+- **Later, same AI layer:** a weekly coach summary ("bench up 2.5 kg, shoulder volume
+  low"), sleep and recovery explanations, and "why is my squat stalling?" questions
+  over your own logs.
 
 **"Today's workout" card** (read-only, for the gym): the next template in the rotation,
 or the scheduled one. Each exercise shows target sets × rep range @ RPE, last time's
@@ -251,11 +294,13 @@ Habbit/                       app target
                               CompositeSource, MockSource
     Auth/                     GoogleOAuth (PKCE), KeychainStore
     Sync/                     HealthObserver, BackgroundRefresh, WorkoutMatcher
+  AI/                         VoiceCapture (SpeechAnalyzer), DebriefParser
+                              (FoundationModels · ClaudeAPI · RuleBased)
   Resources/                  Fonts, exercise seed JSON
 HabbitWidgets/                streak + steps widget
 Packages/HabbitCore/          Swift package, pure logic, no UIKit or HealthKit
   Sources/HabbitCore/         OverloadEngine, StreakEngine, SleepInsights,
-                              CalorieBreakdown, WorkoutMatcher, Units
+                              CalorieBreakdown, WorkoutMatcher, DebriefValidator, Units
   Tests/HabbitCoreTests/
 LICENSE (MIT) · README.md · PLAN.md
 ```
@@ -271,7 +316,8 @@ built test-first. `swift test` runs it on the Mac without a simulator.
 | 2 | **Xcode project and design system**: tokens, fonts, components, Home with `MockSource` | Home looks like the reference design with fake data |
 | 3 | **Apple Health**: permissions, `HealthKitSource`, priority check, observers | Real Fitbit steps, kcal and sleep on Home |
 | 3b | **Google Health (optional)**: test, OAuth with PKCE, Keychain, `GoogleHealthSource`, HRV on the Sleep screen | HRV shows up, and losing the sign-in falls back to Apple Health without errors |
-| 4 | **Workouts**: templates, exercise seed data, log sheet, workout detection and notification, Today card | Log a Fitbit-recorded session and see the next suggestion |
+| 4 | **Workouts**: templates, exercise seed data, log sheet, workout detection, actionable notification (✓ / 🎙 / Edit), tap-to-adjust, Today card | Log a Fitbit-recorded session in one tap and see the next suggestion |
+| 4b | **AI voice debrief**: SpeechAnalyzer, Foundation Models `Debrief`, validation in HabbitCore, confirm screen, BYO Claude key fallback | Saying "overhead press last set only six" updates the right set |
 | 5 | **Streaks and celebrations**: week strip, chips, freezes, milestones, confetti | Streaks update correctly from real data |
 | 6 | **Detail screens**: calorie pie, sleep insights, progress charts | Every card opens to a useful detail screen |
 | 7 | **Setup and polish**: onboarding, widget, evening nudge, dark mode, README | Ready to use daily and to open-source |
