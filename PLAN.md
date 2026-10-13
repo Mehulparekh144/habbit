@@ -18,7 +18,8 @@ Status: the plan is settled after a grilling session (Oct 2026). Next step is bu
 | Platform | Native SwiftUI, **iOS 27 minimum**, built with Xcode on macOS 27 |
 | Distribution | Open source, **MIT**. The author is the first user, but nothing is hard-coded to one person, so App Store release stays possible |
 | Backend | None. All data lives on the device |
-| Data source | **Apple Health (HealthKit)**. The Google Health app (formerly Fitbit) writes Fitbit Air data into it |
+| Data source | **Apple Health (HealthKit)** is the main source. The Google Health app (formerly Fitbit) writes Fitbit Air data into it |
+| Google Health | **Optional "Connect Google Health"** (OAuth). It's a data connection, not an app login. It adds HRV and fills gaps when Apple Health has nothing for a day. Each person who builds Habbit uses their own Google Cloud client ID |
 | Steps | Daily goal (default 10,000, editable), hourly, 7- and 30-day charts |
 | Calories | Goal = **all active calories** (default 500 kcal, editable). Pie chart: **Workouts vs Steps & movement**. Resting calories shown for context |
 | Sleep | Stage bar and plain-language comparisons to your own 14-day average. Default goal 7.5 h |
@@ -48,10 +49,9 @@ Status: the plan is settled after a grilling session (Oct 2026). Next step is bu
 - Habbit **writes nothing** to Apple Health in version 1.
 - **Background updates:** `HKObserverQuery` with background delivery, so Habbit learns
   about new workouts and sleep, plus `BGAppRefreshTask` as a backup.
-- **Known gaps:** Google Health doesn't share HRV or skin temperature. Neither is needed.
-- **Backup plan if the Google Health → Apple Health sync breaks:** the Google Health API,
-  which Bevel uses. Its access is currently restricted. Everything goes through one
-  protocol, so the source can be swapped:
+- **Known gaps:** Google Health doesn't share HRV or skin temperature with Apple Health.
+  The optional Google Health connection (section 2b) covers HRV.
+- Everything goes through one protocol, so sources can be combined or swapped:
 
 ```swift
 protocol HealthDataSource {
@@ -60,8 +60,62 @@ protocol HealthDataSource {
     func sleep(in range: DateInterval) async throws -> [SleepSession]
     func workouts(in range: DateInterval) async throws -> [RecordedWorkout]
 }
-// HealthKitSource (version 1) · MockSource (previews/tests) · GoogleHealthSource (backup)
+// HealthKitSource (main) · GoogleHealthSource (optional) · MockSource (previews/tests)
+// CompositeSource merges them using the rules in 2b
 ```
+
+## 2b. Optional: Google Health API connection
+
+**What it is:** a "Connect Google Health" button in setup and in Settings. Habbit has
+no accounts and no server, so this is a **data connection, not a login**. The app works
+fully without it.
+
+**Which source wins, per metric:**
+
+| Metric | Source |
+|---|---|
+| Steps, active and resting kcal, sleep, workouts | Apple Health. Use Google only for a day where Apple Health has **no data at all** (e.g. the sync was turned off) |
+| HRV | Google Health only (Apple Health never gets it) |
+| Resting heart rate | Apple Health |
+
+Never add the two sources together, so nothing is counted twice.
+
+**How sign-in works (no server):**
+- OAuth 2.0 with an **iOS client** (no client secret) and **PKCE**, using
+  `ASWebAuthenticationSession`. The redirect is the reversed client ID scheme
+  (`com.googleusercontent.apps.<id>:/oauth2redirect`).
+- **Read-only** scopes only: `googlehealth.activity_and_fitness.readonly`,
+  `googlehealth.sleep.readonly` and `googlehealth.health_metrics_and_measurements.readonly`.
+  Google renamed scopes in May 2026, so confirm the exact names during the test.
+- The refresh token goes in the **Keychain**. The access token is refreshed on demand.
+- **When the token expires:** if Google revokes or expires it, Habbit shows a
+  "Reconnect Google Health" chip and keeps running on Apple Health data. Nothing breaks.
+- **Fetching:** `GET health.googleapis.com/v4/users/me/dataTypes/{type}/dataPoints`,
+  called when the app opens and from `BGAppRefreshTask`. Results are cached in SwiftData.
+  Webhooks need a server, so they're not used.
+
+**Open source and Google's limits:**
+- Google Health scopes are **restricted**. An app Google hasn't verified is limited
+  to **100 users**, and going past that needs verification plus a yearly security
+  assessment. A shared client ID would hit that limit.
+- So **each person who builds Habbit brings their own client ID**:
+  `Config/Secrets.xcconfig` (in .gitignore) sets `GOOGLE_CLIENT_ID`, and
+  `Secrets.example.xcconfig` is committed as a template. With no ID set, the Google
+  button is hidden.
+- README steps: create a Google Cloud project → enable the Google Health API →
+  set up the OAuth consent screen and add yourself as a test user → create an iOS
+  OAuth client with the app's bundle ID → paste the ID into `Secrets.xcconfig`.
+
+**Test first (before building screens on it):**
+1. Confirm Google lets the project enable and call the Health API. New projects were
+   restricted earlier in 2026.
+2. Confirm an **iOS** client type works with these scopes.
+3. Read today's steps, last night's sleep and HRV from the phone.
+4. **Check how long the sign-in lasts.** An app in "Testing" mode may have to sign in
+   again every 7 days. Try "In production" without verification (you'll see Google's
+   "unverified app" warning, 100-user limit) to see if that keeps the sign-in alive.
+5. **If the test fails:** keep Apple Health only. HRV is a nice-to-have, so nothing in
+   version 1 depends on it.
 
 ## 3. Features
 
@@ -185,6 +239,7 @@ last session's working sets:
 
 ```
 Habbit.xcodeproj
+Config/                       Secrets.example.xcconfig (Secrets.xcconfig is gitignored)
 Habbit/                       app target
   App/                        HabbitApp, RootView, AppState
   DesignSystem/               Colors, Typography, Card, WeekStrip, CheckToggle, Confetti
@@ -192,7 +247,9 @@ Habbit/                       app target
     Onboarding/ Home/ Steps/ Calories/ Sleep/ Workouts/ Streaks/ Profile/
   Data/
     Models/                   SwiftData models
-    Health/                   HealthDataSource, HealthKitSource, MockSource
+    Health/                   HealthDataSource, HealthKitSource, GoogleHealthSource,
+                              CompositeSource, MockSource
+    Auth/                     GoogleOAuth (PKCE), KeychainStore
     Sync/                     HealthObserver, BackgroundRefresh, WorkoutMatcher
   Resources/                  Fonts, exercise seed JSON
 HabbitWidgets/                streak + steps widget
@@ -213,11 +270,12 @@ built test-first. `swift test` runs it on the Mac without a simulator.
 | 1 | **HabbitCore** (test-first): overload, streaks, calorie breakdown, sleep insights, workout matching | `swift test` passes |
 | 2 | **Xcode project and design system**: tokens, fonts, components, Home with `MockSource` | Home looks like the reference design with fake data |
 | 3 | **Apple Health**: permissions, `HealthKitSource`, priority check, observers | Real Fitbit steps, kcal and sleep on Home |
+| 3b | **Google Health (optional)**: test, OAuth with PKCE, Keychain, `GoogleHealthSource`, HRV on the Sleep screen | HRV shows up, and losing the sign-in falls back to Apple Health without errors |
 | 4 | **Workouts**: templates, exercise seed data, log sheet, workout detection and notification, Today card | Log a Fitbit-recorded session and see the next suggestion |
 | 5 | **Streaks and celebrations**: week strip, chips, freezes, milestones, confetti | Streaks update correctly from real data |
 | 6 | **Detail screens**: calorie pie, sleep insights, progress charts | Every card opens to a useful detail screen |
 | 7 | **Setup and polish**: onboarding, widget, evening nudge, dark mode, README | Ready to use daily and to open-source |
-| later | Custom habits, Google Health API source, App Store | |
+| later | Custom habits, App Store, readiness score built from HRV | |
 
 ## 7. Getting your Mac ready
 
@@ -228,3 +286,7 @@ built test-first. `swift test` runs it on the Mac without a simulator.
    TestFlight.
 3. iPhone: Settings → Privacy & Security → **Developer Mode** on. Then connect it by
    cable once.
+4. *(For the optional Google Health connection)* At console.cloud.google.com: create a
+   project → enable **Google Health API** → **OAuth consent screen**, adding your Gmail
+   as a test user → **Credentials → Create OAuth client ID → iOS**, with the bundle ID
+   (e.g. `com.mehulparekh.habbit`). Keep the client ID handy.
